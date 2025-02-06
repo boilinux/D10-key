@@ -1,0 +1,7 @@
+custom_module.createnodelog:
+  path: "/api/v1/createnodelog"
+  defaults:
+    _controller: '\Drupal\custom_module\Controller\CustomModuleController::saveNodeData'
+  methods: [POST]
+  requirements:
+    _access: "TRUE"
