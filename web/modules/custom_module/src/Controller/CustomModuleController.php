@@ -90,6 +90,12 @@ final class CustomModuleController extends ControllerBase
       ]);
       $node->setOwnerId(1); // Set the node's owner
 
+      $node->field_camera_photo->setValue([
+        'target_id' => $file->id(),
+        'alt' => 'Photo camera shot',
+        'title' => 'Photo camera shot',
+      ]);
+
       $node->save();
 
       return new JsonResponse(['message' => 'Node created successfully', 'nid' => $node->id()], 201);
