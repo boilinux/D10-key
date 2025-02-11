@@ -11,6 +11,10 @@ use Drupal\node\Entity\Node;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\user\Entity\User;
+use Drupal\file\Entity\File;
+use Drupal\media\Entity\Media;
+use Drupal\Core\File\FileSystemInterface;
+
 
 /**
  * Returns responses for custom_module routes.
@@ -57,11 +61,27 @@ final class CustomModuleController extends ControllerBase
 
     $data = json_decode($request->getContent(), TRUE);
 
-    if (!isset($data['title'], $data['status'])) {
+    if (!isset($data['title'], $data['status'], $data['image'])) {
       return new JsonResponse(['error' => 'Missing required data'], 400);
     }
 
     try {
+      // Get the base64 encoded image from the request.
+      $base64_image = $data['image'];
+
+      $filteredData = substr($base64_image, strpos($base64_image, ",") + 1);
+
+      // Decode the base64 image.
+      $decoded_image = base64_decode($filteredData);
+
+      // Generate a unique file name.
+      $file_name = 'image_' . time() . '.jpeg';
+
+      // Define the file destination.
+      $file_destination = 'public://images/' . $file_name;
+
+      $file = \Drupal::service('file.repository')->writeData($decoded_image, $file_destination);
+
       $node = Node::create([
         'type' => 'data_logs', // Replace with your content type machine name
         'title' => $data['title'], // Or a dynamic title
