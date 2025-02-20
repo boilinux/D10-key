@@ -1,0 +1,16 @@
+{
+  "files.associations": {
+    "arduino.h": "c",
+    "eeprom.h": "c",
+    "shiftdisplay.h": "c",
+    "compare": "cpp",
+    "type_traits": "cpp",
+    "array": "cpp",
+    "string": "cpp",
+    "string_view": "cpp",
+    "chrono": "cpp",
+    "random": "cpp",
+    "limits": "cpp",
+    "semaphore": "cpp"
+  }
+}
