@@ -61,26 +61,13 @@ final class CustomModuleController extends ControllerBase
 
     $data = json_decode($request->getContent(), TRUE);
 
-    if (!isset($data['title'], $data['status'], $data['image'])) {
+    if (!isset($data['title'], $data['status'])) {
       return new JsonResponse(['error' => 'Missing required data'], 400);
     }
 
     try {
-      // Get the base64 encoded image from the request.
-      $base64_image = $data['image'];
 
-      $filteredData = substr($base64_image, strpos($base64_image, ",") + 1);
 
-      // Decode the base64 image.
-      $decoded_image = base64_decode($filteredData);
-
-      // Generate a unique file name.
-      $file_name = 'image_' . time() . '.jpeg';
-
-      // Define the file destination.
-      $file_destination = 'public://images/' . $file_name;
-
-      $file = \Drupal::service('file.repository')->writeData($decoded_image, $file_destination);
 
       $node = Node::create([
         'type' => 'data_logs', // Replace with your content type machine name
@@ -88,13 +75,32 @@ final class CustomModuleController extends ControllerBase
         'field_status' => $data['status'], // Replace with your text field 1 machine name
         'author' => 1,
       ]);
+
       $node->setOwnerId(1); // Set the node's owner
 
-      $node->field_camera_photo->setValue([
-        'target_id' => $file->id(),
-        'alt' => 'Photo camera shot',
-        'title' => 'Photo camera shot',
-      ]);
+      if (isset($data['image'])) {
+        // Get the base64 encoded image from the request.
+        $base64_image = $data['image'];
+
+        $filteredData = substr($base64_image, strpos($base64_image, ",") + 1);
+
+        // Decode the base64 image.
+        $decoded_image = base64_decode($filteredData);
+
+        // Generate a unique file name.
+        $file_name = 'image_' . time() . '.jpeg';
+
+        // Define the file destination.
+        $file_destination = 'public://images/' . $file_name;
+
+        $file = \Drupal::service('file.repository')->writeData($decoded_image, $file_destination);
+
+        $node->field_camera_photo->setValue([
+          'target_id' => $file->id(),
+          'alt' => 'Photo camera shot',
+          'title' => 'Photo camera shot',
+        ]);
+      }
 
       $node->save();
 

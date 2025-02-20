@@ -5,3 +5,11 @@ custom_module.createnodelog:
   methods: [POST]
   requirements:
     _access: "TRUE"
+
+custom_module.custom_module_api_rfid:
+  path: "/api/v1/checkrfid"
+  defaults:
+    _controller: '\Drupal\custom_module\Controller\CustomModuleApiRfid::checkRfid'
+  methods: [POST]
+  requirements:
+    _access: "TRUE"
