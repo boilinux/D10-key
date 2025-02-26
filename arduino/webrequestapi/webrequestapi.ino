@@ -3,7 +3,7 @@
 #include <ESP8266HTTPClient.h>
 #include <ArduinoJson.h>
 
-#define SERVER_IP "192.168.1.100:8001"
+#define SERVER_IP "192.168.1.134:8001"
 #define STR_TOKEN "e0gXIbic8HBhpytccpuo6Xnrbic8HBhpytc2cxigF11LIZ8"
 
 #ifndef STASSID
@@ -13,6 +13,7 @@
 
 StaticJsonDocument<250> jsonDocument;
 String json_str = "";
+int uid = 0;
 
 void setup()
 {
@@ -37,6 +38,12 @@ void loop()
 		json_str = Serial.readStringUntil('\n');
 		deserializeJson(jsonDocument, json_str);
 
+		if (!jsonDocument.containsKey("type"))
+		{
+			jsonDocument.clear();
+			return;
+		}
+
 		sendPostRequest();
 	}
 }
@@ -48,14 +55,6 @@ void sendPostRequest()
 	{
 		String api_path = "";
 		String postData = "";
-		WiFiClient client;
-		HTTPClient http;
-
-		if (!jsonDocument.containsKey("type"))
-		{
-			Serial.println("error no type data.");
-			return;
-		}
 
 		if (jsonDocument["type"] == 0) // check rfid
 		{
@@ -63,6 +62,20 @@ void sendPostRequest()
 			api_path = "checkrfid";
 			postData = "{\"rfid\":\"" + rfid + "\"}";
 		}
+		else if (jsonDocument["type"] == 2) // button was pressed, borrowed key
+		{
+			int what_key = jsonDocument["key"];
+			api_path = "createnodelog";
+			String remarks = jsonDocument["remarks"];
+			postData = "{\"title\":\"The key was " + remarks + "\",\"status\":\"" + remarks + "\",\"uid\":" + String(uid) + ",\"key\":" + String(what_key) + "}";
+		}
+		else
+		{
+			return;
+		}
+
+		WiFiClient client;
+		HTTPClient http;
 
 		// configure traged server and url
 		http.begin(client, "http://" SERVER_IP "/api/v1/" + api_path); // HTTP
@@ -70,8 +83,9 @@ void sendPostRequest()
 		http.addHeader("Authorization", STR_TOKEN);
 
 		// start connection and send HTTP header and body
-		Serial.println(postData);
+		Serial.println("{\"msg\":\"Sending request\"}");
 		int httpCode = http.POST(postData);
+		delay(1000);
 
 		// httpCode will be negative on error
 		if (httpCode > 0)
@@ -83,11 +97,27 @@ void sendPostRequest()
 				const String &payload = http.getString();
 				deserializeJson(jsonDocument, payload);
 
+				if (!jsonDocument.containsKey("key_perm"))
+				{
+					Serial.println("{\"reset\":1}");
+
+					http.end();
+
+					return;
+				}
+
 				String key_perm = jsonDocument["key_perm"];
+				uid = jsonDocument["uid"];
 
 				Serial.println("{\"type\":1,\"key_perm\":" + key_perm + "}");
 			}
 		}
+		else
+		{
+			// has error
+			Serial.println("{\"error\":\"try again\"}");
+		}
+		jsonDocument.clear();
 
 		http.end();
 	}
