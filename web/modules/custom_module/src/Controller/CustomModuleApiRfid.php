@@ -36,7 +36,7 @@ final class CustomModuleApiRfid extends ControllerBase
 
     try {
       $queryKeyPerm = \Drupal::database()->query(
-        "SELECT ufkp.field_key_permission_value AS key_perm FROM user__field_rfid AS rfid
+        "SELECT ufkp.field_key_permission_value AS key_perm, rfid.entity_id AS uid FROM user__field_rfid AS rfid
         LEFT JOIN user__field_key_permission AS ufkp ON ufkp.entity_id = rfid.entity_id
 						WHERE rfid.field_rfid_value = '" . $data['rfid'] . "'
 					"
@@ -46,11 +46,13 @@ final class CustomModuleApiRfid extends ControllerBase
         return new JsonResponse(['error' => 'User not found'], 404);
       }
       $key_perm = [];
+      $uid = 0;
       foreach ($queryKeyPerm as $data) {
         $key_perm[] = $data->key_perm;
+        $uid = $data->uid;
       }
 
-      $jsonResponse = new JsonResponse(['message' => 'Rfid scanned successfully', 'status' => 200, 'method' => 'POST', 'key_perm' => $key_perm]);
+      $jsonResponse = new JsonResponse(['message' => 'Rfid scanned successfully', 'status' => 200, 'method' => 'POST', 'uid' => $uid, 'key_perm' => $key_perm]);
 
       \Drupal::logger('custom_module')->info($jsonResponse);
 

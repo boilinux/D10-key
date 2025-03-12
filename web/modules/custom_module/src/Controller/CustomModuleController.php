@@ -61,22 +61,28 @@ final class CustomModuleController extends ControllerBase
 
     $data = json_decode($request->getContent(), TRUE);
 
-    if (!isset($data['title'], $data['status'])) {
+    if (!isset($data['title'], $data['key'], $data['uid'], $data['status'])) {
       return new JsonResponse(['error' => 'Missing required data'], 400);
     }
 
     try {
 
-
+      /*$queryKeyPerm = \Drupal::database()->query(
+        "SELECT ufkp.field_key_permission_value AS key_perm, rfid.entity_id AS uid FROM user__field_rfid AS rfid
+        LEFT JOIN user__field_key_permission AS ufkp ON ufkp.entity_id = rfid.entity_id
+						WHERE rfid.field_rfid_value = '" . $data['rfid'] . "'
+					"
+      )->fetchField();*/
 
       $node = Node::create([
         'type' => 'data_logs', // Replace with your content type machine name
         'title' => $data['title'], // Or a dynamic title
+        'field_key' => $data['key'], // Replace with your text field 1 machine name
+        'field_remakrs' => $data['status'], // Replace with your text field 1 machine name
         'field_status' => $data['status'], // Replace with your text field 1 machine name
-        'author' => 1,
       ]);
 
-      $node->setOwnerId(1); // Set the node's owner
+      $node->setOwnerId($data['uid']); // Set the node's owner
 
       if (isset($data['image'])) {
         // Get the base64 encoded image from the request.
@@ -104,7 +110,7 @@ final class CustomModuleController extends ControllerBase
 
       $node->save();
 
-      return new JsonResponse(['message' => 'Node created successfully', 'nid' => $node->id()], 201);
+      return new JsonResponse(['message' => 'Node created successfully', 'nid' => $node->id()], 200);
     } catch (\Exception $e) {
       \Drupal::logger('my_module')->error('Error creating node: @error', ['@error' => $e->getMessage()]);
       return new JsonResponse(['error' => 'Error creating node: ' . $e->getMessage()], 500);
