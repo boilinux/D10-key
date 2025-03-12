@@ -3,6 +3,7 @@
 #include <MFRC522.h>
 #include <ArduinoJson.h>
 #include <LiquidCrystal_I2C.h>
+#include <SoftwareSerial.h>
 
 #define DELAY_TIME 2000
 #define DELAY_TIME_DISPLAY 3000
@@ -12,20 +13,8 @@
 
 #define BUZZER_PIN 8
 
-#define BTN1_PIN A0
-#define BTN2_PIN A1
-#define BTN3_PIN A2
-#define BTN4_PIN A3
-
-#define IR1_PIN 6
-#define IR2_PIN 5
-
-#define RELAY1_PIN 7
-
-int btn1_state = 0, btn1_old_state = 0;
-int btn2_state = 0, btn2_old_state = 0;
-int btn3_state = 0, btn3_old_state = 0;
-int btn4_state = 0, btn4_old_state = 0;
+#define RX_PIN 6
+#define TX_PIN 7
 
 LiquidCrystal_I2C lcd(0x27, 2, 1, 0, 4, 5, 6, 7, 3, POSITIVE); // Set the LCD I2C address
 
@@ -35,6 +24,8 @@ MFRC522::MIFARE_Key key;
 StaticJsonDocument<250> jsonDocument;
 String json_str = "";
 String str_rfid = "";
+
+SoftwareSerial megaSerial(RX_PIN, TX_PIN);
 
 void setup()
 {
@@ -49,16 +40,6 @@ void setup()
     // init buzzer
     pinMode(BUZZER_PIN, OUTPUT);
     digitalWrite(BUZZER_PIN, LOW); // turn off
-
-    // init buttons
-    pinMode(BTN1_PIN, INPUT);
-    // init relay
-    pinMode(RELAY1_PIN, OUTPUT);
-    // init ir
-    pinMode(IR1_PIN, INPUT);
-    pinMode(IR2_PIN, INPUT);
-
-    digitalWrite(RELAY1_PIN, HIGH); // turn off
 
     init_display();
 }
@@ -122,33 +103,11 @@ void loop()
             lcd.setCursor(0, 1);
             lcd.print(str_key_perm);
 
+            // send the key perm to arduino mega
+            megaSerial.println(json_str);
+
             while (1) // press button what key
             {
-                btn1_state = digitalRead(BTN1_PIN);
-                btn2_state = digitalRead(BTN2_PIN);
-                btn3_state = digitalRead(BTN3_PIN);
-                btn4_state = digitalRead(BTN4_PIN);
-
-                if (key_array[1] && btn1_state == LOW && btn1_state != btn1_old_state)
-                {
-
-                    process_the_key(1, RELAY1_PIN, IR1_PIN);
-                    lcd_display_success();
-
-                    break;
-                }
-                if (key_array[2] && btn2_state == LOW && btn2_state != btn2_old_state)
-                {
-                    process_the_key(2, RELAY1_PIN, IR2_PIN);
-                    lcd_display_success();
-
-                    break;
-                }
-
-                btn1_old_state = btn1_state;
-                btn2_old_state = btn2_state;
-                btn3_old_state = btn3_state;
-                btn4_old_state = btn4_state;
             }
             beep();
             init_display();
@@ -206,23 +165,23 @@ void process_key(int btn, String remarks)
     Serial.println("{\"type\":2,\"key\":" + String(btn) + ",\"remarks\":\"" + remarks + "\"}");
 }
 
-void process_the_key(int what_key, int relay_pin, int ir_pin)
-{
-    String remarks = "";
-    int ir_state = 0;
-    update_relay_state(relay_pin);
-    ir_state = check_ir_state(ir_pin);
-
-    if (ir_state == HIGH)
-    { // if state is HIGH/1 then key not exist
-        remarks = "Failed";
-    }
-    else
-    {
-        remarks = "Success";
-    }
-    process_key(what_key, remarks);
-}
+// void process_the_key(int what_key, int relay_pin, int ir_pin)
+//{
+//     String remarks = "";
+//     int ir_state = 0;
+//     update_relay_state(relay_pin);
+//     ir_state = check_ir_state(ir_pin);
+//
+//     if (ir_state == HIGH)
+//     { // if state is HIGH/1 then key not exist
+//         remarks = "Failed";
+//     }
+//     else
+//     {
+//         remarks = "Success";
+//     }
+//     process_key(what_key, remarks);
+// }
 
 void get_rfid()
 {
