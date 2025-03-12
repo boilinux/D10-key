@@ -1,6 +1,6 @@
 #include "esp_camera.h"
 #include <WiFi.h>
-
+#include <WiFiClient.h>
 //
 // WARNING!!! PSRAM IC required for UXGA resolution and high JPEG quality
 //            Ensure ESP32 Wrover Module or other board with PSRAM is selected
@@ -37,8 +37,15 @@
 // ===========================
 // Enter your WiFi credentials
 // ===========================
-const char *ssid = "starlink_wifi101";
-const char *password = "@Starlink25252525";
+const char *ssid = "Kainoa";
+const char *password = "@starX@2024";
+
+// Static IP address configuration
+IPAddress local_IP(192, 168, 1, 9);
+IPAddress gateway(192, 168, 1, 1);
+IPAddress subnet(255, 255, 255, 0);
+IPAddress primaryDNS(8, 8, 8, 8);   // optional
+IPAddress secondaryDNS(8, 8, 4, 4); // optional
 
 void startCameraServer();
 void setupLedFlash(int pin);
@@ -143,6 +150,12 @@ void setup()
 #if defined(LED_GPIO_NUM)
     setupLedFlash(LED_GPIO_NUM);
 #endif
+
+    // Configuring static IP
+    if (!WiFi.config(local_IP, gateway, subnet, primaryDNS, secondaryDNS))
+    {
+        Serial.println("STA Failed to configure");
+    }
 
     WiFi.begin(ssid, password);
     WiFi.setSleep(false);

@@ -27,15 +27,15 @@ int btn2_state = 0, btn2_old_state = 0;
 int btn3_state = 0, btn3_old_state = 0;
 int btn4_state = 0, btn4_old_state = 0;
 
-SoftwareSerial megaSerial(RX_PIN, TX_PIN);
+// SoftwareSerial Serial(RX_PIN, TX_PIN);
 
 StaticJsonDocument<250> jsonDocument;
 String json_str = "";
 
 void setup()
 {
-    Serial.begin(115200); // Initialize serial communication
-    megaSerial.begin(115200);
+    Serial.begin(9600); // Initialize serial communication
+    // Serial.begin(115200);
 
     // init btn
     pinMode(BTN1_PIN, INPUT);
@@ -62,13 +62,14 @@ void setup()
 
 void loop()
 {
-    if (megaSerial.available() > 0)
+    if (Serial.available() > 0)
     {
-        String json_str = megaSerial.readStringUntil('\n');
+        String json_str = Serial.readStringUntil('\n');
         deserializeJson(jsonDocument, json_str);
 
         if (jsonDocument["type"] == 1) // process key perm
         {
+            Serial.println("OK!!!");
             int key_perm = jsonDocument["key_perm"];
             int size_perm_key = jsonDocument["key_perm"].size();
 
@@ -116,10 +117,15 @@ void loop()
 
                 //    break;
                 //}
+                btn1_old_state = btn1_state;
+                btn2_old_state = btn2_state;
+                btn3_old_state = btn3_state;
+                btn4_old_state = btn4_state;
             }
         }
     }
 }
+
 void update_relay_state(byte relay_pin)
 {
     digitalWrite(relay_pin, LOW);
@@ -153,5 +159,5 @@ byte check_ir_state(byte ir_pin)
 void process_key(int btn, String remarks)
 {
 
-    megaSerial.println("{\"type\":2,\"key\":" + String(btn) + ",\"remarks\":\"" + remarks + "\"}");
+    Serial.println("{\"type\":2,\"key\":" + String(btn) + ",\"remarks\":\"" + remarks + "\"}");
 }

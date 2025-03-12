@@ -29,9 +29,10 @@ SoftwareSerial megaSerial(RX_PIN, TX_PIN);
 
 void setup()
 {
-    Serial.begin(115200); // Initialize serial communication
-    SPI.begin();          // Init SPI bus
-    rfid.PCD_Init();      // Init MFRC522 module
+    Serial.begin(9600); // Initialize serial communication
+    megaSerial.begin(9600);
+    SPI.begin();     // Init SPI bus
+    rfid.PCD_Init(); // Init MFRC522 module
 
     // init lcd
     lcd.begin(16, 2);
@@ -82,8 +83,6 @@ void loop()
 
             // what key permission
             String str_key_perm = "";
-            const int key_size = 12;
-            bool key_array[key_size] = {0};
             for (int i = 0; i < size_perm_key; i++)
             {
                 String str_key_value = jsonDocument["key_perm"][i].as<String>();
@@ -94,7 +93,6 @@ void loop()
                 }
 
                 str_key_perm += " " + str_key_value;
-                key_array[key_value] = 1;
             }
             // display on lcd
             lcd.clear();
@@ -105,9 +103,22 @@ void loop()
 
             // send the key perm to arduino mega
             megaSerial.println(json_str);
+            Serial.println(json_str);
+
+            str_rfid = "";
 
             while (1) // press button what key
             {
+                if (megaSerial.available() > 0)
+                {
+                    json_str = megaSerial.readStringUntil('\n');
+                    deserializeJson(jsonDocument, json_str);
+                    if (jsonDocument["type"] == 2)
+                    {
+                        Serial.println(json_str);
+                        break;
+                    }
+                }
             }
             beep();
             init_display();
@@ -132,7 +143,10 @@ void loop()
             if (error_msg == "try again" && str_rfid != "")
             {
                 Serial.print("{\"type\":0,\"rfid\":\"" + str_rfid + "\"}");
+
+                return;
             }
+            str_rfid = "";
         }
         jsonDocument.clear();
     }

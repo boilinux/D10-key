@@ -3,7 +3,7 @@
 #include <ESP8266HTTPClient.h>
 #include <ArduinoJson.h>
 
-#define SERVER_IP "192.168.1.134:8001"
+#define SERVER_IP "82.180.137.10"
 #define STR_TOKEN "e0gXIbic8HBhpytccpuo6Xnrbic8HBhpytc2cxigF11LIZ8"
 
 #ifndef STASSID
@@ -17,7 +17,7 @@ int uid = 0;
 
 void setup()
 {
-	Serial.begin(115200);
+	Serial.begin(9600);
 
 	WiFi.begin(STASSID, STAPSK);
 
