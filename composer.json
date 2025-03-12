@@ -22,6 +22,7 @@
         "drupal/core-recommended": "^10.4",
         "drupal/gin": "^4.0",
         "drupal/gin_toolbar": "^2.0",
+        "drupal/views_data_export": "^1.5",
         "drush/drush": "^13.3"
     },
     "conflict": {

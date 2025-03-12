@@ -100,6 +100,7 @@ void sendPostRequest()
 				if (!jsonDocument.containsKey("key_perm"))
 				{
 					Serial.println("{\"reset\":1}");
+					jsonDocument.clear();
 
 					http.end();
 

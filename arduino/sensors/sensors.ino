@@ -184,7 +184,7 @@ void lcd_display_success()
 {
     lcd.clear();
     lcd.setCursor(0, 0);
-    lcd.print("Success");
+    lcd.print("ok,please wait");
     delay(DELAY_TIME_DISPLAY);
 }
 
