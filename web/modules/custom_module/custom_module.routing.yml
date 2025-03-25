@@ -13,3 +13,19 @@ custom_module.custom_module_api_rfid:
   methods: [POST]
   requirements:
     _access: "TRUE"
+
+custom_module.get_node_without_image:
+  path: "/api/v1/getnodeid"
+  defaults:
+    _controller: '\Drupal\custom_module\Controller\CustomModuleController::getNodeId'
+  methods: [GET]
+  requirements:
+    _access: "TRUE"
+
+custom_module.post_update_node_with_image:
+  path: "/api/v1/updatenodewithimage"
+  defaults:
+    _controller: '\Drupal\custom_module\Controller\CustomModuleController::updateNodeImage'
+  methods: [POST]
+  requirements:
+    _access: "TRUE"

@@ -8,8 +8,6 @@ use Drupal\Core\Controller\ControllerBase;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Drupal\node\Entity\Node;
-use Symfony\Component\DependencyInjection\ContainerInterface;
-use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\user\Entity\User;
 use Drupal\file\Entity\File;
 use Drupal\media\Entity\Media;
@@ -21,35 +19,7 @@ use Drupal\Core\File\FileSystemInterface;
  */
 final class CustomModuleController extends ControllerBase
 {
-  /**
-   * The entity type manager.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  protected $entityTypeManager;
-
-  /**
-   * MyModuleController constructor.
-   *
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
-   *   The entity type manager.
-   */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager)
-  {
-    $this->entityTypeManager = $entity_type_manager;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container)
-  {
-    return new static(
-      $container->get('entity_type.manager')
-    );
-  }
-
-  public function saveNodeData(Request $request)
+  private function is_authorize(Request $request)
   {
     $requestToken = $request->headers->get('Authorization');
     $adminUser = User::load(1);
@@ -58,7 +28,90 @@ final class CustomModuleController extends ControllerBase
     if ($requestToken != $restToken) {
       return new JsonResponse(['error' => 'Access Denied'], 400);
     }
+  }
+  public function getNodeId(Request $request)
+  {
+    $this->is_authorize($request);
 
+    $node = [];
+
+    $query = \Drupal::database()->query(
+      "SELECT nfd.nid FROM node_field_data AS nfd
+      LEFT JOIN node__field_camera_photo AS nfcp ON nfcp.entity_id = nfd.nid
+      WHERE nfcp.field_camera_photo_target_id IS NULL AND nfd.type = 'data_logs'"
+    )->fetchAll();
+
+    foreach ($query as $record) {
+      $node[] = $record->nid;
+    }
+
+    return new JsonResponse(['message' => 'Node without image', 'nid' => $node], 200);
+  }
+  public function updateNodeImage(Request $request)
+  {
+    $this->is_authorize($request);
+
+    $data['nid'] = json_decode($request->request->get('nid'), true);
+    $data['image'] = $request->files->get('image');
+
+    if (!isset($data['image']) || !isset($data['nid'])) {
+      return new JsonResponse(['error' => 'Missing required data', 'data' => $data], 400);
+    }
+
+    try {
+
+      if (is_array($data['nid'])) {
+        foreach ($data['nid'] as $nid) {
+          $node = Node::load($nid);
+
+          // Handle file upload
+          $files = $request->files->get('image'); // 'file' should match the key in Flutter request
+          if (!$files) {
+            return new JsonResponse(['error' => 'No file uploaded'], 400);
+          }
+
+          // Move file to Drupal private/public files
+          $directory = 'public://uploads/';
+          \Drupal::service('file_system')->prepareDirectory($directory, \Drupal\Core\File\FileSystemInterface::CREATE_DIRECTORY);
+
+          $file_name = $files->getClientOriginalName();
+          $file_destination = $directory . $file_name;
+          $file_uri = \Drupal::service('file_system')->saveData(file_get_contents($files->getPathname()), $file_destination, FileSystemInterface::EXISTS_RENAME);
+
+          \Drupal::logger('my_module')->error('File upload failed for: @file_name', ['@file_name' => $file_uri]);
+
+          if ($file_uri) {
+            // Convert to a Managed File Entity
+            $file_entity = File::create([
+              'uri' => $file_uri,
+              'uid' => $node->uid, // Change this to the correct user ID if needed
+              'status' => 1,
+            ]);
+            $file_entity->save();
+          }
+
+          $node->field_camera_photo->setValue([
+            'target_id' => $file_entity->id(),
+            'alt' => 'Photo camera shot',
+            'title' => 'Photo camera shot',
+          ]);
+
+          $node->save();
+        }
+      }
+
+      return new JsonResponse(['message' => 'Update node successfully', 'nid' => $data['nid']], 200);
+    } catch (\Exception $e) {
+      \Drupal::logger('my_module')->error('Error updating node: @error', ['@error' => $e->getMessage()]);
+      return new JsonResponse(['error' => 'Error updating node: ' . $e->getMessage()], 500);
+    }
+  }
+
+
+  // Create a new node with the data sent from the device.
+  public function saveNodeData(Request $request)
+  {
+    $this->is_authorize($request);
     $data = json_decode($request->getContent(), TRUE);
 
     if (!isset($data['title'], $data['key'], $data['uid'], $data['status'])) {
