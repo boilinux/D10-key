@@ -68,7 +68,7 @@ class _CameraScreenState extends State<CameraScreen> {
       _isCameraInitialized = true;
     });
 
-    //_startAutoCapture();
+    _startAutoCapture();
   }
 
   /// Start capturing images every minute
@@ -85,32 +85,19 @@ class _CameraScreenState extends State<CameraScreen> {
     try {
       Api api = Api();
       await api.getNodeId();
+      if (api.nid.isEmpty) {
+        return;
+      }
+
       final XFile image = await _controller!.takePicture();
-      // Read image file as bytes
       File imageFile = File(image.path);
       api.updateNodeImage(imageFile);
-      //List<int> imageBytes = await imageFile.readAsBytes();
 
-      //// Convert to Base64
-      //String base64Image = base64Encode(imageBytes);
-
-      //print("Base64 Image: $base64Image"); // Use this Base64 string as needed
-      //final String filePath = await _saveImage(image);
-      //print("Image saved: $filePath");
+      api.nid.clear();
     } catch (e) {
       print("Error capturing image: $e");
     }
   }
-
-  /// Save the image to the app's storage directory
-  //Future<String> _saveImage(XFile image) async {
-  //  final Directory directory = await getApplicationDocumentsDirectory();
-  //  final String filePath =
-  //      '${directory.path}/${DateTime.now().millisecondsSinceEpoch}.jpg';
-
-  //  await File(image.path).copy(filePath);
-  //  return filePath;
-  //}
 
   @override
   void dispose() {
@@ -127,8 +114,8 @@ class _CameraScreenState extends State<CameraScreen> {
           ? ListView(
               children: [
                 CameraPreview(_controller!),
-                TextButton(
-                    onPressed: _captureImage, child: const Text('Capture'))
+                //TextButton(
+                //    onPressed: _captureImage, child: const Text('Capture'))
               ],
             )
           : const Center(child: CircularProgressIndicator()),
