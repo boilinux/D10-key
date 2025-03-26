@@ -29,3 +29,19 @@ custom_module.post_update_node_with_image:
   methods: [POST]
   requirements:
     _access: "TRUE"
+
+custom_module.custom_module_controller_sms:
+  path: "/api/v1/getsmsnotification"
+  defaults:
+    _controller: '\Drupal\custom_module\Controller\CustomModuleControllerSms::getSmsNotification'
+  methods: [GET]
+  requirements:
+    _permission: "access content"
+
+custom_module.custom_module_controller_sms_update:
+  path: "/api/v1/postsmsnotification"
+  defaults:
+    _controller: '\Drupal\custom_module\Controller\CustomModuleControllerSms::postSmsNotification'
+  methods: [POST]
+  requirements:
+    _permission: "access content"
