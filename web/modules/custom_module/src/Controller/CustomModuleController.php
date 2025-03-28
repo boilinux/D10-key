@@ -174,7 +174,7 @@ final class CustomModuleController extends ControllerBase
           if ($status == "failed") {
             if ($ir == "no_detection") {
               $status = "success";
-              $remarks = "returned";
+              $remarks = "borrowed";
             } else if ($ir == "yes_detection") {
               $status = "failed";
               $remarks = "borrowed";
