@@ -7,8 +7,8 @@
 #define STR_TOKEN "e0gXIbic8HBhpytccpuo6Xnrbic8HBhpytc2cxigF11LIZ8"
 
 #ifndef STASSID
-#define STASSID "starlink_wifi101"
-#define STAPSK "@Starlink25252525"
+#define STASSID "ELECTRONICS-tech"
+#define STAPSK "224programming"
 #endif
 
 StaticJsonDocument<250> jsonDocument;
