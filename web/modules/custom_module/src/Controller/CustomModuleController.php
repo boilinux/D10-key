@@ -151,20 +151,40 @@ final class CustomModuleController extends ControllerBase
         $remarks = $queryRecord['remarks'];
 
         if ($remarks == "returned") {
-          if ($ir == "no_detection") {
-            $status = "failed";
-            $remarks = "returned";
-          } else if ($ir == "yes_detection") {
-            $status = "success";
-            $remarks = "borrowed";
+          if ($status == "failed") {
+            if ($ir == "yes_detection") {
+              $status = "failed";
+              $remarks = "returned";
+            } else if ($ir == "no_detection") {
+              $status = "success";
+              $remarks = "borrowed";
+            }
+          } else {
+            if ($ir == "no_detection") {
+              $status = "failed";
+              $remarks = "returned";
+            } else if ($ir == "yes_detection") {
+              $status = "success";
+              $remarks = "borrowed";
+            }
           }
         } else if ($remarks == "borrowed") {
-          if ($ir == "no_detection") {
-            $status = "failed";
-            $remarks = "borrowed";
-          } else if ($ir == "yes_detection") {
-            $status = "success";
-            $remarks = "returned";
+          if ($status == "failed") {
+            if ($ir == "no_detection") {
+              $status = "failed";
+              $remarks = "borrowed";
+            } else if ($ir == "yes_detection") {
+              $status = "success";
+              $remarks = "returned";
+            } else {
+              if ($ir == "no_detection") {
+                $status = "failed";
+                $remarks = "borrowed";
+              } else if ($ir == "yes_detection") {
+                $status = "success";
+                $remarks = "returned";
+              }
+            }
           }
         }
       }
