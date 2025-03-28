@@ -52,7 +52,7 @@ final class CustomModuleApiRfid extends ControllerBase
         $uid = $data->uid;
       }
 
-      $jsonResponse = new JsonResponse(['message' => 'Rfid scanned successfully', 'status' => 200, 'method' => 'POST', 'uid' => $uid, 'key_perm' => $key_perm]);
+      $jsonResponse = new JsonResponse(['uid' => $uid, 'key_perm' => $key_perm]);
 
       \Drupal::logger('custom_module')->info($jsonResponse);
 
