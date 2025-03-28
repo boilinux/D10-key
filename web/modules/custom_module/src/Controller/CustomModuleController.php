@@ -119,49 +119,80 @@ final class CustomModuleController extends ControllerBase
     }
 
     try {
+      $myKey = $data['key'];
+      // assume no record then its borrowed
+      $ir = $data['status'];
+      $status = "success";
+      $remarks = "borrowed";
 
-      /*$queryKeyPerm = \Drupal::database()->query(
-        "SELECT ufkp.field_key_permission_value AS key_perm, rfid.entity_id AS uid FROM user__field_rfid AS rfid
-        LEFT JOIN user__field_key_permission AS ufkp ON ufkp.entity_id = rfid.entity_id
-						WHERE rfid.field_rfid_value = '" . $data['rfid'] . "'
-					"
-      )->fetchField();*/
+      // assume borrowed if ir yes_detection, then failed
+      if ($ir == "yes_detection") {
+        $status = "failed";
+        $remarks = "returned";
+      } else if ($ir == "no_detection") {
+        $status = "success";
+        $remarks = "borrowed";
+      }
 
+
+      $queryRecord = \Drupal::database()->query(
+        "SELECT nfd.nid,nfs.field_status_value AS status, nfr.field_remarks_value AS remarks, nfk.field_key_value AS key_value
+        FROM node_field_data AS nfd
+        LEFT JOIN node__field_key AS nfk ON nfk.entity_id = nfd.nid
+        LEFT JOIN node__field_status AS nfs ON nfs.entity_id = nfd.nid
+        LEFT JOIN node__field_remarks AS nfr ON nfr.entity_id = nfd.nid
+        WHERE nfd.type='data_logs' AND nfk.field_key_value = " . $data['key'] . " ORDER BY nfd.nid DESC"
+      )->fetchAssoc();
+
+      // if query has record
+      if ($queryRecord) {
+        $myKey = $queryRecord['key_value'];
+        $status = $queryRecord['status'];
+        $remarks = $queryRecord['remarks'];
+
+        if ($remarks == "returned") {
+          if ($ir == "no_detection") {
+            $status = "failed";
+            $remarks = "returned";
+          } else if ($ir == "yes_detection") {
+            $status = "success";
+            $remarks = "borrowed";
+          }
+        } else if ($remarks == "borrowed") {
+          if ($ir == "no_detection") {
+            $status = "failed";
+            $remarks = "borrowed";
+          } else if ($ir == "yes_detection") {
+            $status = "success";
+            $remarks = "returned";
+          }
+        }
+      }
+
+      $strTitle = "Key " . $myKey . " is " . $remarks;
+
+      // create a data_logs node
       $node = Node::create([
         'type' => 'data_logs', // Replace with your content type machine name
-        'title' => $data['title'], // Or a dynamic title
-        'field_key' => $data['key'], // Replace with your text field 1 machine name
-        'field_remakrs' => $data['status'], // Replace with your text field 1 machine name
-        'field_status' => $data['status'], // Replace with your text field 1 machine name
+        'title' => $strTitle, // Or a dynamic title
+        'field_key' => $myKey, // Replace with your text field 1 machine name
+        'field_remarks' => $remarks, // Replace with your text field 1 machine name
+        'field_status' => $status, // Replace with your text field 1 machine name
       ]);
 
       $node->setOwnerId($data['uid']); // Set the node's owner
 
-      if (isset($data['image'])) {
-        // Get the base64 encoded image from the request.
-        $base64_image = $data['image'];
-
-        $filteredData = substr($base64_image, strpos($base64_image, ",") + 1);
-
-        // Decode the base64 image.
-        $decoded_image = base64_decode($filteredData);
-
-        // Generate a unique file name.
-        $file_name = 'image_' . time() . '.jpeg';
-
-        // Define the file destination.
-        $file_destination = 'public://images/' . $file_name;
-
-        $file = \Drupal::service('file.repository')->writeData($decoded_image, $file_destination);
-
-        $node->field_camera_photo->setValue([
-          'target_id' => $file->id(),
-          'alt' => 'Photo camera shot',
-          'title' => 'Photo camera shot',
-        ]);
-      }
-
       $node->save();
+
+      // create a notification_logs node
+      $user = User::load($data['uid']);
+      $strNotificationTitle = "Key " . $myKey . " is " . $remarks . " by " . $user->getDisplayName() . " at " . date('Y-m-d H:i:s') . " Status: " . $status;
+      $nodeNotification = Node::create([
+        'type' => 'notification_logs', // Replace with your content type machine name
+        'title' => $strNotificationTitle, // Or a dynamic title
+      ]);
+      $nodeNotification->setOwnerId($data['uid']); // Set the node's owner
+      $nodeNotification->save();
 
       return new JsonResponse(['message' => 'Node created successfully', 'nid' => $node->id()], 200);
     } catch (\Exception $e) {

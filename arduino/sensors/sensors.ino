@@ -4,6 +4,7 @@
 #include <ArduinoJson.h>
 #include <LiquidCrystal_I2C.h>
 #include <SoftwareSerial.h>
+#include <avr/wdt.h>
 
 #define DELAY_TIME 2000
 #define DELAY_TIME_DISPLAY 3000
@@ -137,11 +138,8 @@ void loop()
                 }
             }
             beep();
-            init_display();
-        }
-        else if (jsonDocument.containsKey("reset"))
-        {
-            init_display();
+            // resetArduino();
+            wdt_enable(WDTO_15MS); // Enable the watchdog timer (15ms)
         }
         else if (jsonDocument.containsKey("msg"))
         {
@@ -169,24 +167,17 @@ void loop()
     get_rfid();
 }
 
+void resetArduino()
+{
+    asm volatile("jmp 0x0000"); // Jump to the reset address
+}
+
 void lcd_display_success()
 {
     lcd.clear();
     lcd.setCursor(0, 0);
     lcd.print("ok,please wait");
     delay(DELAY_TIME_DISPLAY);
-}
-
-byte check_ir_state(byte ir_pin)
-{
-    return digitalRead(ir_pin);
-}
-
-void update_relay_state(byte relay_pin)
-{
-    digitalWrite(relay_pin, LOW);
-    delay(DELAY_TIME);
-    digitalWrite(relay_pin, HIGH);
 }
 
 void get_rfid()
