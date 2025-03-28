@@ -21,7 +21,7 @@ LiquidCrystal_I2C lcd(0x27, 2, 1, 0, 4, 5, 6, 7, 3, POSITIVE); // Set the LCD I2
 MFRC522 rfid(SS_PIN, RST_PIN); // Create RFID instance
 MFRC522::MIFARE_Key key;
 
-StaticJsonDocument<250> jsonDocument;
+StaticJsonDocument<350> jsonDocument;
 String json_str = "";
 String str_rfid = "";
 
@@ -67,7 +67,6 @@ void loop()
     {
         json_str = Serial.readStringUntil('\n');
         deserializeJson(jsonDocument, json_str);
-        int size_perm_key = jsonDocument.size();
 
         if (jsonDocument["type"] == 1)
         {
@@ -82,24 +81,41 @@ void loop()
             byte ir_state = 0;
 
             // what key permission
+            int size_perm_key = jsonDocument["k"].size();
             String str_key_perm = "";
-            for (int i = 0; i < size_perm_key; i++)
+            String str_key_perm2 = "";
+            for (int i = 0; i <= size_perm_key; i++)
             {
-                String str_key_value = jsonDocument["key_perm"][i].as<String>();
-                int key_value = jsonDocument["key_perm"][i];
+                String str_key_value = jsonDocument["k"][i].as<String>();
+                int key_value = jsonDocument["k"][i];
                 if (str_key_value == "null")
                 {
                     continue;
                 }
 
-                str_key_perm += " " + str_key_value;
+                if (i < 8)
+                {
+                    str_key_perm += str_key_value + " ";
+                }
+                else
+                {
+                    str_key_perm2 += str_key_value + " ";
+                }
             }
             // display on lcd
             lcd.clear();
             lcd.setCursor(0, 0);
-            lcd.print("Key Permission");
+            lcd.print("Please select");
             lcd.setCursor(0, 1);
+            lcd.print("Key Permission");
+            delay(3000); // wait for 3 seconds
+
+            // display on lcd keys
+            lcd.clear();
+            lcd.setCursor(0, 0);
             lcd.print(str_key_perm);
+            lcd.setCursor(0, 1);
+            lcd.print(str_key_perm2);
 
             // send the key perm to arduino mega
             megaSerial.println(json_str);
@@ -172,30 +188,6 @@ void update_relay_state(byte relay_pin)
     delay(DELAY_TIME);
     digitalWrite(relay_pin, HIGH);
 }
-
-void process_key(int btn, String remarks)
-{
-
-    Serial.println("{\"type\":2,\"key\":" + String(btn) + ",\"remarks\":\"" + remarks + "\"}");
-}
-
-// void process_the_key(int what_key, int relay_pin, int ir_pin)
-//{
-//     String remarks = "";
-//     int ir_state = 0;
-//     update_relay_state(relay_pin);
-//     ir_state = check_ir_state(ir_pin);
-//
-//     if (ir_state == HIGH)
-//     { // if state is HIGH/1 then key not exist
-//         remarks = "Failed";
-//     }
-//     else
-//     {
-//         remarks = "Success";
-//     }
-//     process_key(what_key, remarks);
-// }
 
 void get_rfid()
 {

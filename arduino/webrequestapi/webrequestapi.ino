@@ -11,7 +11,7 @@
 #define STAPSK "224programming"
 #endif
 
-StaticJsonDocument<250> jsonDocument;
+StaticJsonDocument<350> jsonDocument;
 String json_str = "";
 int uid = 0;
 
@@ -97,7 +97,7 @@ void sendPostRequest()
 				const String &payload = http.getString();
 				deserializeJson(jsonDocument, payload);
 
-				if (!jsonDocument.containsKey("key_perm"))
+				if (!jsonDocument.containsKey("k"))
 				{
 					Serial.println("{\"reset\":1}");
 					jsonDocument.clear();
@@ -107,10 +107,10 @@ void sendPostRequest()
 					return;
 				}
 
-				String key_perm = jsonDocument["key_perm"];
+				String k = jsonDocument["k"];
 				uid = jsonDocument["uid"];
 
-				Serial.println("{\"type\":1,\"key_perm\":" + key_perm + "}");
+				Serial.println("{\"type\":1,\"k\":" + k + "}");
 			}
 		}
 		else

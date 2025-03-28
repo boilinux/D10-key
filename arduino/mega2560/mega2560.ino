@@ -135,16 +135,15 @@ void loop()
         {
             Serial.println("OK!!!");
             Serial.println(json_str);
-            int key_perm = jsonDocument["key_perm"];
-            int size_perm_key = jsonDocument["key_perm"].size();
+            int size_perm_key = jsonDocument["k"].size();
 
             const int key_size = 13;
             bool key_array[key_size] = {0};
 
             for (int i = 0; i < size_perm_key; i++)
             {
-                String str_key_value = jsonDocument["key_perm"][i].as<String>();
-                int key_value = jsonDocument["key_perm"][i];
+                String str_key_value = jsonDocument["k"][i].as<String>();
+                int key_value = jsonDocument["k"][i];
                 if (str_key_value == "null")
                 {
                     continue;
