@@ -150,6 +150,7 @@ final class CustomModuleController extends ControllerBase
         $status = $queryRecord['status'];
         $remarks = $queryRecord['remarks'];
 
+        // if returned
         if ($remarks == "returned") {
           if ($status == "failed") {
             if ($ir == "yes_detection") {
@@ -159,31 +160,33 @@ final class CustomModuleController extends ControllerBase
               $status = "success";
               $remarks = "borrowed";
             }
+          }
+        } else {
+          if ($ir == "no_detection") {
+            $status = "failed";
+            $remarks = "returned";
+          } else if ($ir == "yes_detection") {
+            $status = "success";
+            $remarks = "borrowed";
+          }
+        }
+        // if borrowed
+        if ($remarks == "borrowed") {
+          if ($status == "failed") {
+            if ($ir == "no_detection") {
+              $status = "success";
+              $remarks = "success";
+            } else if ($ir == "yes_detection") {
+              $status = "failed";
+              $remarks = "borrowed";
+            }
           } else {
             if ($ir == "no_detection") {
               $status = "failed";
-              $remarks = "returned";
-            } else if ($ir == "yes_detection") {
-              $status = "success";
-              $remarks = "borrowed";
-            }
-          }
-        } else if ($remarks == "borrowed") {
-          if ($status == "failed") {
-            if ($ir == "no_detection") {
-              $status = "failed";
               $remarks = "borrowed";
             } else if ($ir == "yes_detection") {
               $status = "success";
               $remarks = "returned";
-            } else {
-              if ($ir == "no_detection") {
-                $status = "failed";
-                $remarks = "borrowed";
-              } else if ($ir == "yes_detection") {
-                $status = "success";
-                $remarks = "returned";
-              }
             }
           }
         }
