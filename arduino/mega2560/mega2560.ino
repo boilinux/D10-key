@@ -16,7 +16,7 @@
 #define BTN7_PIN 10
 #define BTN8_PIN 11
 #define BTN9_PIN 12
-#define BTN10_PIN 13
+#define BTN10_PIN 42 // was pin 13 sensitive
 #define BTN11_PIN 14
 #define BTN12_PIN 15
 
@@ -61,7 +61,7 @@ int btn12_state = 0, btn12_old_state = 0;
 
 // SoftwareSerial Serial(RX_PIN, TX_PIN);
 
-StaticJsonDocument<250> jsonDocument;
+StaticJsonDocument<350> jsonDocument;
 String json_str = "";
 
 void setup()
