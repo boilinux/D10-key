@@ -54,7 +54,7 @@ final class CustomModuleController extends ControllerBase
     $data['nid'] = json_decode($request->request->get('nid'), true);
     $data['image'] = $request->files->get('image');
 
-    if (!isset($data['image']) || !isset($data['nid'])) {
+    if (!isset($data['what_image']) || !isset($data['image']) || !isset($data['nid'])) {
       return new JsonResponse(['error' => 'Missing required data', 'data' => $data], 400);
     }
 
@@ -90,11 +90,25 @@ final class CustomModuleController extends ControllerBase
             $file_entity->save();
           }
 
-          $node->field_camera_photo->setValue([
-            'target_id' => $file_entity->id(),
-            'alt' => 'Photo camera shot',
-            'title' => 'Photo camera shot',
-          ]);
+          $what_image = $data['what_image'];
+
+          // save to camera photo
+          if ($what_image == 0) {
+            $node->field_camera_photo->setValue([
+              'target_id' => $file_entity->id(),
+              'alt' => 'Photo camera shot',
+              'title' => 'Photo camera shot',
+            ]);
+          }
+          // save to camera photo 2
+          else if ($what_image == 1) {
+            $node->field_camera_photo2->setValue([
+              'target_id' => $file_entity->id(),
+              'alt' => 'Photo camera shot 2',
+              'title' => 'Photo camera shot 2',
+            ]);
+          }
+
 
           $node->save();
         }
