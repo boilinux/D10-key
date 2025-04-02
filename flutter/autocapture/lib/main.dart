@@ -55,11 +55,11 @@ class _CameraScreenState extends State<CameraScreen> {
       return;
     }
     // Select the front camera
-    final frontCamera = widget.cameras!.firstWhere(
-      (camera) => camera.lensDirection == CameraLensDirection.front,
+    final frontCamera = widget.cameras.firstWhere(
+      (camera) => camera.lensDirection == CameraLensDirection.back,
     );
 
-    _controller = CameraController(frontCamera, ResolutionPreset.medium);
+    _controller = CameraController(frontCamera, ResolutionPreset.high);
     await _controller!.initialize();
 
     if (!mounted) return;

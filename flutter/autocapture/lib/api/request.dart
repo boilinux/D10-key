@@ -52,6 +52,7 @@ class Api {
       var request = http.MultipartRequest('POST', url)
         ..headers['Authorization'] =
             'e0gXIbic8HBhpytccpuo6Xnrbic8HBhpytc2cxigF11LIZ8'
+        ..fields['what_image'] = 'front'
         ..fields['nid'] = json.encode(nid);
       if (image != '') {
         request.files
