@@ -55,6 +55,8 @@ final class CustomModuleController extends ControllerBase
     $data['what_image'] = json_decode($request->request->get('what_image'), true);
     $data['image'] = $request->files->get('image');
 
+    \Drupal::logger('my_module')->error('data: @data', ['@data' => $data]);
+
     if (!isset($data['what_image']) || !isset($data['image']) || !isset($data['nid'])) {
       return new JsonResponse(['error' => 'Missing required data', 'data' => $data], 400);
     }
