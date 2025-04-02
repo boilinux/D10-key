@@ -67,6 +67,19 @@ final class CustomModuleController extends ControllerBase
     return new JsonResponse(['message' => 'Node without image', 'nid' => $node], 200);
   }
 
+  public function getLatestNodeId(Request $request)
+  {
+    $this->is_authorize($request);
+
+    $queryNid = \Drupal::database()->query(
+      "SELECT nfd.nid FROM node_field_data AS nfd
+      WHERE nfd.type = 'data_logs'
+      ORDER BY nfd.nid DESC LIMIT 1"
+    )->fetchField();
+
+    return new JsonResponse(['message' => 'Latest data_logs node id', 'nid' => $queryNid], 200);
+  }
+
   public function updateNodeImage(Request $request)
   {
     $this->is_authorize($request);
