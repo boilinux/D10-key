@@ -47,6 +47,26 @@ final class CustomModuleController extends ControllerBase
 
     return new JsonResponse(['message' => 'Node without image', 'nid' => $node], 200);
   }
+
+  public function getNodeId2(Request $request)
+  {
+    $this->is_authorize($request);
+
+    $node = [];
+
+    $query = \Drupal::database()->query(
+      "SELECT nfd.nid FROM node_field_data AS nfd
+      LEFT JOIN node__field_camera_photo2 AS nfcp ON nfcp.entity_id = nfd.nid
+      WHERE nfcp.field_camera_photo2_target_id IS NULL AND nfd.type = 'data_logs'"
+    )->fetchAll();
+
+    foreach ($query as $record) {
+      $node[] = $record->nid;
+    }
+
+    return new JsonResponse(['message' => 'Node without image', 'nid' => $node], 200);
+  }
+
   public function updateNodeImage(Request $request)
   {
     $this->is_authorize($request);

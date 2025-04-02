@@ -22,6 +22,14 @@ custom_module.get_node_without_image:
   requirements:
     _access: "TRUE"
 
+custom_module.get_node_without_image2:
+  path: "/api/v1/getnodeid2"
+  defaults:
+    _controller: '\Drupal\custom_module\Controller\CustomModuleController::getNodeId2'
+  methods: [GET]
+  requirements:
+    _access: "TRUE"
+
 custom_module.post_update_node_with_image:
   path: "/api/v1/updatenodewithimage"
   defaults:
