@@ -52,6 +52,7 @@ final class CustomModuleController extends ControllerBase
     $this->is_authorize($request);
 
     $data['nid'] = json_decode($request->request->get('nid'), true);
+    $data['what_image'] = json_decode($request->request->get('what_image'), true);
     $data['image'] = $request->files->get('image');
 
     if (!isset($data['what_image']) || !isset($data['image']) || !isset($data['nid'])) {
