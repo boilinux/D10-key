@@ -93,7 +93,7 @@ final class CustomModuleController extends ControllerBase
           $what_image = $data['what_image'];
 
           // save to camera photo
-          if ($what_image == 0) {
+          if ($what_image == 'front') {
             $node->field_camera_photo->setValue([
               'target_id' => $file_entity->id(),
               'alt' => 'Photo camera shot',
@@ -101,7 +101,7 @@ final class CustomModuleController extends ControllerBase
             ]);
           }
           // save to camera photo 2
-          else if ($what_image == 1) {
+          else if ($what_image == 'back') {
             $node->field_camera_photo2->setValue([
               'target_id' => $file_entity->id(),
               'alt' => 'Photo camera shot 2',
