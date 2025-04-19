@@ -34,6 +34,8 @@ final class CustomModuleApiRfid extends ControllerBase
       return new JsonResponse(['error' => 'Missing required data'], 400);
     }
 
+    \Drupal::logger('custom_module')->info('Checking RFID: @rfid', ['@rfid' => $data['rfid']]);
+
     try {
       $queryKeyPerm = \Drupal::database()->query(
         "SELECT ufkp.field_key_permission_value AS key_perm, rfid.entity_id AS uid FROM user__field_rfid AS rfid
